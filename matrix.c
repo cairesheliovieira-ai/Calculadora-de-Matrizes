@@ -1,30 +1,10 @@
 #include "matrix.h"
 
-#include <errno.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #define EPSILON 1e-10
-
-static void imprimir_erro(ResultadoOperacao resultado) {
-    switch (resultado) {
-        case OP_ERRO_DIMENSOES:
-            printf("Operacao impossivel: dimensoes incompativeis.\n");
-            break;
-        case OP_ERRO_SINGULAR:
-            printf("Operacao impossivel: matriz divisora singular (sem inversa).\n");
-            break;
-        case OP_ERRO_NAO_QUADRADA:
-            printf("Operacao impossivel: a matriz divisora precisa ser quadrada.\n");
-            break;
-        case OP_ERRO_MEMORIA:
-            printf("Erro: memoria insuficiente.\n");
-            break;
-        default:
-            break;
-    }
-}
 
 void limpar_entrada(void) {
     int caractere;
@@ -41,6 +21,7 @@ size_t ler_tamanho(const char *mensagem, size_t minimo, size_t maximo) {
             limpar_entrada();
             return valor;
         }
+
         limpar_entrada();
         printf("Entrada invalida. Informe um numero inteiro entre %zu e %zu.\n",
                minimo, maximo);
@@ -56,6 +37,7 @@ double ler_double(const char *mensagem) {
             limpar_entrada();
             return valor;
         }
+
         limpar_entrada();
         printf("Entrada invalida. Informe um numero real valido.\n");
     }
@@ -64,8 +46,9 @@ double ler_double(const char *mensagem) {
 Matriz matriz_criar(size_t linhas, size_t colunas) {
     Matriz matriz = {0, 0, NULL};
 
-    if (linhas == 0 || colunas == 0 || linhas > SIZE_MAX / sizeof(double *) ||
-        colunas > SIZE_MAX / sizeof(double *)) {
+    if (linhas == 0 || colunas == 0 ||
+        linhas > SIZE_MAX / sizeof(double *) ||
+        colunas > SIZE_MAX / sizeof(double)) {
         return matriz;
     }
 
@@ -240,6 +223,11 @@ Matriz matriz_inverter(const Matriz *matriz, ResultadoOperacao *resultado) {
     }
 
     size_t n = matriz->linhas;
+    if (n > SIZE_MAX / 2) {
+        *resultado = OP_ERRO_MEMORIA;
+        return (Matriz){0, 0, NULL};
+    }
+
     Matriz aumentada = matriz_criar(n, 2 * n);
     if (aumentada.dados == NULL) {
         *resultado = OP_ERRO_MEMORIA;
@@ -286,10 +274,8 @@ Matriz matriz_inverter(const Matriz *matriz, ResultadoOperacao *resultado) {
             if (i == p) {
                 continue;
             }
+
             double fator = aumentada.dados[i][p];
-            if (fabs(fator) <= EPSILON) {
-                continue;
-            }
             for (size_t j = 0; j < 2 * n; ++j) {
                 aumentada.dados[i][j] -= fator * aumentada.dados[p][j];
             }
@@ -325,6 +311,7 @@ ResultadoOperacao operacao_adicao_sequencial(const Matriz *matrizes, size_t quan
         ResultadoOperacao estado;
         Matriz seguinte = matriz_soma(resultado, &matrizes[i], &estado);
         matriz_liberar(resultado);
+
         if (estado != OP_ERRO_OK) {
             return estado;
         }
@@ -345,6 +332,7 @@ ResultadoOperacao operacao_subtracao_sequencial(const Matriz *matrizes, size_t q
         ResultadoOperacao estado;
         Matriz seguinte = matriz_subtracao(resultado, &matrizes[i], &estado);
         matriz_liberar(resultado);
+
         if (estado != OP_ERRO_OK) {
             return estado;
         }
@@ -365,6 +353,7 @@ ResultadoOperacao operacao_multiplicacao_sequencial(const Matriz *matrizes, size
         ResultadoOperacao estado;
         Matriz seguinte = matriz_multiplicacao(resultado, &matrizes[i], &estado);
         matriz_liberar(resultado);
+
         if (estado != OP_ERRO_OK) {
             return estado;
         }
@@ -406,4 +395,3 @@ ResultadoOperacao operacao_divisao_sequencial(const Matriz *matrizes, size_t qua
 
     return OP_ERRO_OK;
 }
-
