@@ -1,53 +1,31 @@
 #ifndef MATRIX_H
 #define MATRIX_H
 
-#include <stddef.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
+#define MAX_MATRIZES 10
+#define MAX_DIM 10
 
 typedef struct {
-    size_t linhas;
-    size_t colunas;
-    double **dados;
+    int linhas;
+    int colunas;
+    double dados[MAX_DIM][MAX_DIM];
 } Matriz;
 
 typedef enum {
-    OP_ERRO_OK = 0,
-    OP_ERRO_DIMENSOES,
-    OP_ERRO_SINGULAR,
-    OP_ERRO_NAO_QUADRADA,
-    OP_ERRO_MEMORIA
-} ResultadoOperacao;
+    OK,
+    ERRO_DIMENSAO,
+    ERRO_NAO_QUADRADA,
+    ERRO_SINGULAR
+} Status;
 
-Matriz matriz_criar(size_t linhas, size_t colunas);
-Matriz matriz_clonar(const Matriz *origem);
-void matriz_liberar(Matriz *matriz);
+/* Cadastro, leitura e exibicao. */
+int cadastrarMatrizes(Matriz matrizes[]);
+void exibirMatriz(const Matriz *matriz);
 
-Matriz matriz_ler(size_t numero);
-void matriz_exibir(const Matriz *matriz);
-
-Matriz matriz_soma(const Matriz *a, const Matriz *b, ResultadoOperacao *resultado);
-Matriz matriz_subtracao(const Matriz *a, const Matriz *b, ResultadoOperacao *resultado);
-Matriz matriz_multiplicacao(const Matriz *a, const Matriz *b, ResultadoOperacao *resultado);
-Matriz matriz_inverter(const Matriz *matriz, ResultadoOperacao *resultado);
-
-ResultadoOperacao operacao_adicao_sequencial(const Matriz *matrizes, size_t quantidade,
-                                            Matriz *resultado);
-ResultadoOperacao operacao_subtracao_sequencial(const Matriz *matrizes, size_t quantidade,
-                                               Matriz *resultado);
-ResultadoOperacao operacao_multiplicacao_sequencial(const Matriz *matrizes, size_t quantidade,
-                                                   Matriz *resultado);
-ResultadoOperacao operacao_divisao_sequencial(const Matriz *matrizes, size_t quantidade,
-                                              Matriz *resultado);
-
-size_t ler_tamanho(const char *mensagem, size_t minimo, size_t maximo);
-double ler_double(const char *mensagem);
-void limpar_entrada(void);
-
-#ifdef __cplusplus
-}
-#endif
+/* Operacoes elementares e execucao sequencial. */
+Status somarOuSubtrair(const Matriz *a, const Matriz *b, Matriz *resultado, int sinal);
+Status multiplicar(const Matriz *a, const Matriz *b, Matriz *resultado);
+Status inverter(const Matriz *matriz, Matriz *inversa);
+Status dividir(const Matriz *a, const Matriz *b, Matriz *resultado);
+void executarOperacao(int operacao, const Matriz matrizes[], int quantidade);
 
 #endif
