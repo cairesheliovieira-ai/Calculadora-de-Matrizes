@@ -3,6 +3,10 @@
 
 #include <stddef.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct {
     size_t linhas;
     size_t colunas;
@@ -41,5 +45,9 @@ ResultadoOperacao operacao_divisao_sequencial(const Matriz *matrizes, size_t qua
 size_t ler_tamanho(const char *mensagem, size_t minimo, size_t maximo);
 double ler_double(const char *mensagem);
 void limpar_entrada(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
